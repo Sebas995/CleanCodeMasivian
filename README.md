@@ -1,7 +1,7 @@
-# CleanCodeMasivian
+# Clean Code Masivian
 
 
-Prueba de CleanCode para masivian // 18 de agosto de 2020
+Prueba de Clean Code para masivian // 18 de agosto de 2020
 
 # Metodos
 
