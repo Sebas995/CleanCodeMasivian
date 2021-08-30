@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BLL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Models;
 
 namespace CleanCodeMasivian.Controllers
 {
@@ -11,11 +12,11 @@ namespace CleanCodeMasivian.Controllers
     [ApiController]
     public class RouletteController : ControllerBase
     {
-        private readonly RoulleteBLL roulleteBLL;
+        private RoulleteBLL roulleteBLL;
 
-        public RouletteController(RouletteContext context)
+        public RouletteController(RoulleteBLL roulleteBLL)
         {
-            _context = context;
+            this.roulleteBLL = roulleteBLL;
         }
 
         /// <summary>
@@ -25,7 +26,7 @@ namespace CleanCodeMasivian.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RouletteModel>>> GetRoulettes()
         {
-            return await _context.Roulettes.ToListAsync();
+            return await roulleteBLL.GetRoulettes();
         }
 
         /// <summary>
@@ -35,16 +36,7 @@ namespace CleanCodeMasivian.Controllers
         [HttpPost]
         public async Task<ActionResult<RouletteModel>> PostRouletteModel()
         {
-            RouletteModel rouletteModel = new RouletteModel
-            {
-                Id = Guid.NewGuid(),
-                RouletteOpen = false,
-                Open = null,
-                Close = null
-            };
-            _context.Roulettes.Add(rouletteModel);
-            await _context.SaveChangesAsync();
-            return rouletteModel;
+            return await roulleteBLL.PostRouletteModel();
         }
 
         /// <summary>
@@ -55,20 +47,7 @@ namespace CleanCodeMasivian.Controllers
         [HttpPost("{id}/OpenRoulette")]
         public async Task<ActionResult<string>> PutRouletteModel(Guid id)
         {
-            string Response = String.Empty;
-            var Roulette = await _context.Roulettes.FindAsync(id); 
-            try
-            {
-                Roulette.RouletteOpen = true;
-                Roulette.Open = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-                Response = "Roulette open successfully.";
-            }
-            catch (Exception)
-            {
-                Response = "Error to open Roulette.";
-            }
-            return Response;
+            return await roulleteBLL.PutRouletteModel(id);
         }
 
         /// <summary>
@@ -79,31 +58,9 @@ namespace CleanCodeMasivian.Controllers
         /// <param name="betModel">Bet</param>
         /// <returns>Success or False</returns>
         [HttpPost("{id}/BetRoulette")]
-        public async Task<ActionResult<string>> BetRouletteModel(Guid id, [FromHeader(Name="userId")] string UserId, BetModel betModel)
+        public async Task<ActionResult<string>> BetRouletteModel(Guid id, [FromHeader(Name="userId")] string userId, BetModel betModel)
         {
-            string Response = String.Empty;
-            var Roulette = await _context.Roulettes.FindAsync(id);
-            try
-            {
-                if(Roulette.RouletteOpen==false) throw new Exception("Bet is not open.");
-                if (betModel.BetPosition<=0 || betModel.BetPosition >= 36)
-                    throw new Exception("Bet position is invalid.");
-                else
-                    if(betModel.BetColor.ToUpper() != "BLACK" && betModel.BetColor.ToUpper() != "RED" ) throw new Exception("Bet color is invalid.");
-
-                if (betModel.BetMoney <= 0 || betModel.BetMoney >= 10000) throw new Exception("Count of money is invalid.");
-                if (String.IsNullOrEmpty(UserId)) throw new Exception("User is invalid.");
-                betModel.Id=Guid.NewGuid(); 
-                betModel.IdRoulette=Roulette.Id; 
-                _context.RoulettesBets.Add(betModel);
-                await _context.SaveChangesAsync();
-                Response = "Bet created successfully.";
-            }
-            catch (Exception e)
-            {
-                Response = e.Message;
-            }
-            return Response;
+            return await roulleteBLL.BetRouletteModel(id, userId, betModel);
         }
 
         /// <summary>
@@ -114,14 +71,7 @@ namespace CleanCodeMasivian.Controllers
         [HttpDelete("{id}/CloseRoulete")]
         public async Task<ActionResult<List<BetModel>>> DeleteRouletteModel(Guid id)
         {
-            var rouletteModel = await _context.Roulettes.FindAsync(id);
-            if (rouletteModel == null)
-                return NotFound();
-
-            rouletteModel.RouletteOpen=false;
-            rouletteModel.Close=DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return _context.RoulettesBets.Where(b => b.IdRoulette == id).ToList();
+            return await roulleteBLL.DeleteRouletteModel(id);
         }
     }
 }
