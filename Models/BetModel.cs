@@ -1,12 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace CleanCodeMasivian.Models
+namespace Models
 {
     public class BetModel
     {
         [Key]
+        /// <summary>
+        /// Id
+        /// </summary>
         public Guid Id {get;set;}
+        /// <summary>
+        /// Id of Roullete
+        /// </summary>
         public Guid IdRoulette {get;set;}
         /// <summary>
         /// Position of bet (0, 36)

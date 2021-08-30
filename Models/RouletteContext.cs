@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-namespace CleanCodeMasivian.Models
+
+namespace Models
 {
     public class RouletteContext : DbContext
     {
